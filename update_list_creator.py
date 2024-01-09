@@ -41,6 +41,11 @@ for node, info in d["nodes"].items():
         # only update segment 9
         continue
 
+    if "UBNT-ERX" in info["nodeinfo"]["hardware"]["model"]:
+        # Don't upgrade ERX due to this issue
+        # https://github.com/oszilloskop/UBNT_ERX_Gluon_Factory-Image/blob/master/ERX-Sysupgrade-Problem.md
+        continue
+
     # filter for a release
     if release != "2019.1.3-1-stable":
         continue
