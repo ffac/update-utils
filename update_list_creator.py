@@ -25,6 +25,10 @@ for node, info in d["nodes"].items():
     address = addresses[0]
     hostname = info["nodeinfo"]["hostname"]
     # of course, only online nodes are updated
+
+    # skip if more than 4 clients are currently connected
+    if connected > 4:
+        continue
     if not info["online"]:
         continue
 
@@ -32,11 +36,9 @@ for node, info in d["nodes"].items():
     autoupdater = autoupdater_settings.get("enabled", False)
     if not autoupdater:
         continue
-    # only specific update branches?
-    # autoupdater_settings["branch"]
 
     # if not "2a03:2260:3006" in address:
-    if not "2a03:2260:3006:9" in address:
+    if not "2a03:2260:3006:1" in address:
         # filter for a segment/domain here
         # only update segment 9
         continue
@@ -49,6 +51,10 @@ for node, info in d["nodes"].items():
     # filter for a release
     if release != "2019.1.3-1-stable":
         continue
+    # only specific update branches?
+    if autoupdater_settings["branch"] != "stable":
+        continue
+
     try:
         meshifs = info["nodeinfo"]["network"]["mesh"]["bat0"]["interfaces"]
         macs = []
@@ -64,19 +70,38 @@ nexthops = set()
 leafs = set()
 
 for node, info in d["nodes"].items():
+    is_leaf = False
     gateway_nexthop = info["statistics"].get("gateway_nexthop")
-    found = False
+    if not gateway_nexthop:
+        # if we do not have a nexthop - assume we are a leaf
+        is_leaf = True
+    
+    try:
+        vpn_values = info["statistics"]["mesh_vpn"]["groups"]["backbone"]["peers"].values()
+        if not any(vpn_values):
+            # if we did not establish a vpn connection, we are a leaf
+            is_leaf = True
+    except KeyError:
+        # if we do not have mesh_vpn active, we are a leaf too
+        is_leaf = True
+    
     for macs in update_nodes.keys():
         if gateway_nexthop in macs:
             # add the nexthop to our nexthop list to remove it afterwards
             nexthops |= {macs}
-            # calculate our mac to move ourselves to the leafs list
+            is_leaf = True
+            break
+    if is_leaf:
+        # calculate our mac to move ourselves to the leafs list
+        try:
             meshifs = info["nodeinfo"]["network"]["mesh"]["bat0"]["interfaces"]
             leaf_macs = []
             for mesh_macs in meshifs.values():
                 leaf_macs.extend(mesh_macs)
             leafs |= {tuple(leaf_macs)}
-            break
+        except KeyError as e:
+            # supernodes throw errors here if bat0 does not exist
+            print(f"KeyError: {e} for {node}")
 
 # move leafs and offloaders to other lists
 update_offloaders = {}
