@@ -1,0 +1,544 @@
+{
+  "nodes": {
+    "000102dd14d6": {
+      "firstseen": "2017-10-18T08:16:00+0200",
+      "lastseen": "2024-01-14T21:25:37+0000",
+      "online": true,
+      "statistics": {
+        "node_id": "000102dd14d6",
+        "clients": {
+          "wifi": 0,
+          "wifi24": 0,
+          "wifi5": 0,
+          "owe": 0,
+          "owe24": 0,
+          "owe5": 0,
+          "total": 0
+        },
+        "dhcp": null,
+        "rootfs_usage": 0.0583,
+        "memory": {
+          "cached": 9428,
+          "total": 496524,
+          "buffers": 10096,
+          "free": 451260,
+          "available": 435940
+        },
+        "uptime": 319073.76,
+        "idletime": 635270.92,
+        "gateway": "ac:c0:1d:08:fe:03",
+        "gateway6": "ac:c0:1d:08:ff:05",
+        "gateway_nexthop": "ac:c0:1d:08:fe:05",
+        "processes": {
+          "total": 70,
+          "running": 1
+        },
+        "mesh_vpn": {
+          "groups": {
+            "backbone": {
+              "peers": {
+                "aachen01": null,
+                "aachen02": null,
+                "aachen03": null,
+                "aachen04": null,
+                "aachen05": {
+                  "established": 124659.723
+                },
+                "aachen06": null
+              },
+              "groups": null
+            }
+          }
+        },
+        "traffic": {
+          "tx": {
+            "bytes": 9178687,
+            "packets": 37618,
+            "dropped": 1716
+          },
+          "rx": {
+            "bytes": 575313282,
+            "packets": 6980539
+          },
+          "forward": {
+            "bytes": 7450607969,
+            "packets": 9453839
+          },
+          "mgmt_tx": {
+            "bytes": 795254457,
+            "packets": 8425323
+          },
+          "mgmt_rx": {
+            "bytes": 1462549553,
+            "packets": 15528361
+          }
+        },
+        "stat": {
+          "cpu": {
+            "user": 100668,
+            "nice": 0,
+            "system": 114371,
+            "idle": 63527092,
+            "iowait": 179,
+            "irq": 0,
+            "softirq": 72419
+          },
+          "intr": 158363553,
+          "ctxt": 136395239,
+          "softirq": 224766177,
+          "processes": 856118
+        }
+      },
+      "nodeinfo": {
+        "node_id": "000102dd14d6",
+        "network": {
+          "mac": "00:01:02:dd:57:d3",
+          "addresses": [
+            "2a03:2260:3006:8:201:2ff:fedd:14d6",
+            "fdac::201:2ff:fedd:14d6",
+            "fe80::201:2ff:fedd:14d6"
+          ],
+          "mesh": {
+            "bat0": {
+              "interfaces": {
+                "other": [
+                  "f6:3c:07:71:79:33",
+                  "f6:3c:07:71:79:34"
+                ],
+                "tunnel": [
+                  "f6:3c:07:71:79:37"
+                ]
+              }
+            }
+          },
+          "mesh_interfaces": null
+        },
+        "owner": {
+          "contact": "test@freifunk-aachen.de"
+        },
+        "system": {
+          "site_code": "ffac"
+        },
+        "hostname": "ffac-test-v2019",
+        "location": {
+          "longitude": 6.3,
+          "latitude": 50.5
+        },
+        "software": {
+          "autoupdater": {
+            "enabled": true,
+            "branch": "stable"
+          },
+          "batman-adv": {
+            "version": "2013.4.0",
+            "compat": 14
+          },
+          "babeld": {},
+          "fastd": {
+            "enabled": true,
+            "version": "v18"
+          },
+          "firmware": {
+            "base": "gluon-v2019.1.3-5-g250b623+",
+            "release": "2019.1.3-1-stable"
+          },
+          "status-page": {
+            "api": 0
+          }
+        },
+        "hardware": {
+          "nproc": 2,
+          "model": "Ubiquiti NanoStation loco M2"
+        },
+        "vpn": false
+      },
+      "custom_fields": {}
+    },
+    "00012e4f3662": {
+      "firstseen": "2018-08-24T15:19:30+0200",
+      "lastseen": "2024-01-14T21:25:38+0000",
+      "online": true,
+      "statistics": {
+        "node_id": "00012e4f3662",
+        "clients": {
+          "wifi": 0,
+          "wifi24": 0,
+          "wifi5": 0,
+          "owe": 0,
+          "owe24": 0,
+          "owe5": 0,
+          "total": 0
+        },
+        "dhcp": null,
+        "rootfs_usage": 0.0014,
+        "loadavg": 0.02,
+        "memory": {
+          "cached": 28376,
+          "total": 1865636,
+          "buffers": 8452,
+          "free": 1778584,
+          "available": 1768476
+        },
+        "uptime": 424991.61,
+        "idletime": 836587.3,
+        "gateway": "02:a2:ff:ac:02:20",
+        "gateway6": "88:e6:ff:ac:20:20",
+        "gateway_nexthop": "02:a1:ff:ac:02:20",
+        "processes": {
+          "total": 95,
+          "running": 1
+        },
+        "mesh_vpn": {},
+        "traffic": {
+          "tx": {
+            "bytes": 19206601,
+            "packets": 60241,
+            "dropped": 54663
+          },
+          "rx": {
+            "bytes": 1146474095,
+            "packets": 14803749
+          },
+          "forward": {
+            "bytes": 74,
+            "packets": 1
+          },
+          "mgmt_tx": {
+            "bytes": 3202451388,
+            "packets": 12342138
+          },
+          "mgmt_rx": {
+            "bytes": 1318522530,
+            "packets": 7054721
+          }
+        },
+        "stat": {
+          "cpu": {
+            "user": 444950,
+            "nice": 0,
+            "system": 391110,
+            "idle": 83658730,
+            "iowait": 52,
+            "irq": 0,
+            "softirq": 503430
+          },
+          "intr": 118842916,
+          "ctxt": 107632623,
+          "softirq": 188898293,
+          "processes": 3577093
+        }
+      },
+      "nodeinfo": {
+        "node_id": "00012e4f3662",
+        "network": {
+          "mac": "00:01:2e:4f:75:3e",
+          "addresses": [
+            "2a03:2260:3006:220:201:2eff:fe4f:3662",
+            "fdac::201:2eff:fe4f:3662",
+            "fe80::201:2eff:fe4f:3662"
+          ],
+          "mesh": {
+            "bat0": {
+              "interfaces": {
+                "other": [
+                  "ea:07:a1:c6:f7:88",
+                  "ea:07:a1:c6:f7:8b"
+                ],
+                "tunnel": [
+                  "5e:2b:f5:74:9f:b2"
+                ]
+              }
+            }
+          },
+          "mesh_interfaces": null
+        },
+        "owner": {
+          "contact": "micky-mouse@freifunk-aachen.de"
+        },
+        "system": {
+          "site_code": "ffac"
+        },
+        "hostname": "ffac-test-v2023",
+        "software": {
+          "autoupdater": {
+            "enabled": true,
+            "branch": "stable"
+          },
+          "batman-adv": {
+            "version": "2022.0-openwrt-9",
+            "compat": 15
+          },
+          "firmware": {
+            "base": "gluon-v2023.1.1-23-g13a6617+",
+            "release": "v2023.1.1-2"
+          },
+          "wireguard": {
+            "enabled": true,
+            "public_key": "3L6r3xbs+Q3KPha6b32oeloZ9oEimcS9De1b/xjZcAQ=",
+            "version": "v1.0.20210424"
+          }
+        },
+        "hardware": {
+          "nproc": 2,
+          "model": "ZOTAC ZBOX-ID18"
+        },
+        "vpn": false
+      },
+      "custom_fields": {}
+    },
+    "02c541d6f331": {
+      "firstseen": "2021-10-16T22:23:40+0200",
+      "lastseen": "2024-01-12T23:19:37+0000",
+      "online": true,
+      "statistics": {
+        "node_id": "02c541d6f331",
+        "clients": {
+          "wifi": 0,
+          "wifi24": 0,
+          "wifi5": 0,
+          "owe": 0,
+          "owe24": 0,
+          "owe5": 0,
+          "total": 4
+        },
+        "dhcp": null,
+        "rootfs_usage": 0.018,
+        "loadavg": 0.53,
+        "memory": {
+          "cached": 4292,
+          "total": 48644,
+          "buffers": 2408,
+          "free": 14976,
+          "available": 6808
+        },
+        "uptime": 139455.2,
+        "idletime": 132034.45,
+        "gateway": "02:a2:ff:ac:01:20",
+        "gateway6": "88:e6:ff:ac:10:20",
+        "gateway_nexthop": "02:a1:ff:ac:01:20",
+        "processes": {
+          "total": 65,
+          "running": 1
+        },
+        "traffic": {
+          "tx": {
+            "bytes": 571513919,
+            "packets": 4955199,
+            "dropped": 36901
+          },
+          "rx": {
+            "bytes": 11070917715,
+            "packets": 13096697
+          },
+          "forward": {
+            "bytes": 465776,
+            "packets": 619
+          },
+          "mgmt_tx": {
+            "bytes": 492988014,
+            "packets": 2292683
+          },
+          "mgmt_rx": {
+            "bytes": 289538732,
+            "packets": 1992470
+          }
+        },
+        "stat": {
+          "cpu": {
+            "user": 64136,
+            "nice": 0,
+            "system": 188527,
+            "idle": 13203445,
+            "iowait": 1290,
+            "irq": 0,
+            "softirq": 479211
+          },
+          "intr": 49043557,
+          "ctxt": 59435393,
+          "softirq": 94229620,
+          "processes": 524456
+        }
+      },
+      "nodeinfo": {
+        "node_id": "02c541d4f2c3",
+        "network": {
+          "mac": "02:c5:41:d4:f2:c3",
+          "addresses": [
+            "2a03:2260:3006:120:c3:41ff:f812:f331",
+            "fdac::c3:41ff:f812:f331",
+            "fe80::c3:41ff:f812:f331"
+          ],
+          "mesh": {
+            "bat0": {
+              "interfaces": {
+                "other": [
+                  "5a:19:8c:6f:87:e3",
+                  "5a:19:8c:6f:87:e7"
+                ]
+              }
+            }
+          },
+          "mesh_interfaces": null
+        },
+        "owner": {
+          "contact": "test@freifunk-aachen.de"
+        },
+        "system": {
+          "site_code": "ffac"
+        },
+        "hostname": "ffac-test-v2021",
+        "location": {
+          "longitude": 6,
+          "latitude": 51.187
+        },
+        "software": {
+          "autoupdater": {
+            "enabled": true,
+            "branch": "stable"
+          },
+          "batman-adv": {
+            "version": "openwrt-2019.2-14",
+            "compat": 15
+          },
+          "firmware": {
+            "base": "gluon-v2021.1.2-5-gf1f7f616+",
+            "release": "v2021.1.2-15"
+          }
+        },
+        "hardware": {
+          "nproc": 1,
+          "model": "TP-Link TL-WR841N/ND v8"
+        },
+        "vpn": false
+      },
+      "custom_fields": {}
+    },
+    "02c541d6f332": {
+      "firstseen": "2021-10-16T22:23:40+0200",
+      "lastseen": "2024-01-12T23:19:37+0000",
+      "online": true,
+      "statistics": {
+        "node_id": "02c541d6f332",
+        "clients": {
+          "wifi": 0,
+          "wifi24": 0,
+          "wifi5": 0,
+          "owe": 0,
+          "owe24": 0,
+          "owe5": 0,
+          "total": 4
+        },
+        "dhcp": null,
+        "rootfs_usage": 0.018,
+        "loadavg": 0.53,
+        "memory": {
+          "cached": 4292,
+          "total": 48644,
+          "buffers": 2408,
+          "free": 14976,
+          "available": 6808
+        },
+        "uptime": 139455.2,
+        "idletime": 132034.45,
+        "gateway": "02:a2:ff:ac:01:20",
+        "gateway6": "88:e6:ff:ac:10:20",
+        "gateway_nexthop": "02:a1:ff:ac:01:20",
+        "processes": {
+          "total": 65,
+          "running": 1
+        },
+        "traffic": {
+          "tx": {
+            "bytes": 571513919,
+            "packets": 4955199,
+            "dropped": 36901
+          },
+          "rx": {
+            "bytes": 11070917715,
+            "packets": 13096697
+          },
+          "forward": {
+            "bytes": 465776,
+            "packets": 619
+          },
+          "mgmt_tx": {
+            "bytes": 492988014,
+            "packets": 2292683
+          },
+          "mgmt_rx": {
+            "bytes": 289538732,
+            "packets": 1992470
+          }
+        },
+        "stat": {
+          "cpu": {
+            "user": 64136,
+            "nice": 0,
+            "system": 188527,
+            "idle": 13203445,
+            "iowait": 1290,
+            "irq": 0,
+            "softirq": 479211
+          },
+          "intr": 49043557,
+          "ctxt": 59435393,
+          "softirq": 94229620,
+          "processes": 524456
+        }
+      },
+      "nodeinfo": {
+        "node_id": "02c541d4f2c3",
+        "network": {
+          "mac": "02:c5:41:d4:f2:c3",
+          "addresses": [
+            "2a03:2260:3006:120:c3:41ff:f812:f332",
+            "fdac::c3:41ff:f812:f332",
+            "fe80::c3:41ff:f812:f332"
+          ],
+          "mesh": {
+            "bat0": {
+              "interfaces": {
+                "other": [
+                  "5a:19:8c:6f:87:e3",
+                  "5a:19:8c:6f:87:e7"
+                ]
+              }
+            }
+          },
+          "mesh_interfaces": null
+        },
+        "owner": {
+          "contact": "test2@freifunk-aachen.de"
+        },
+        "system": {
+          "site_code": "ffac"
+        },
+        "hostname": "ffac-test-v2021-2",
+        "location": {
+          "longitude": 6.1,
+          "latitude": 51.187
+        },
+        "software": {
+          "autoupdater": {
+            "enabled": true,
+            "branch": "stable"
+          },
+          "batman-adv": {
+            "version": "openwrt-2019.2-14",
+            "compat": 15
+          },
+          "firmware": {
+            "base": "gluon-v2021.1.2-5-gf1f7f616+",
+            "release": "v2021.1.2-15"
+          }
+        },
+        "hardware": {
+          "nproc": 1,
+          "model": "TP-Link TL-WR841N/ND v9"
+        },
+        "vpn": false
+      },
+      "custom_fields": {}
+    }
+  }
+}
