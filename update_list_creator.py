@@ -143,3 +143,11 @@ with open("update_offloaders.txt", "w") as f:
         f.write(
             f"allow {address}; # https://map.aachen.freifunk.net/#!/en/map/{node} - {hostname}\n"
         )
+
+whole_list = update_nodes | update_offloaders | update_leafs
+with open("update_all.txt", "w") as f:
+    for macs, tuples in sorted(whole_list.items(), key=lambda x:x[1][2]):
+        address, node, hostname = tuples
+        f.write(
+            f"allow {address}; # https://map.aachen.freifunk.net/#!/en/map/{node} - {hostname}\n"
+        )
