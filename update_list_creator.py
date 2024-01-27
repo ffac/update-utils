@@ -22,13 +22,15 @@ for node, info in d["nodes"].items():
     connected = info["statistics"]["clients"]["total"]
     release = info["nodeinfo"]["software"]["firmware"].get("release")
     addresses = info["nodeinfo"]["network"]["addresses"]
-    address = addresses[0]
+    raw_address = list(filter(lambda x: x.startswith("2a03"), addresses))
+    if raw_address:
+        address = raw_address[0]
+    else:
+        print(f"no public ipv6 for {hostname}")
+        address = addresses[0]
     hostname = info["nodeinfo"]["hostname"]
     # of course, only online nodes are updated
 
-    # skip if more than 4 clients are currently connected
-    if connected > 4:
-        continue
     if not info["online"]:
         continue
 
@@ -38,9 +40,8 @@ for node, info in d["nodes"].items():
         continue
 
     # if not "2a03:2260:3006" in address:
-    if not "2a03:2260:3006:1" in address:
+    if not "2a03:2260:3006:" in address:
         # filter for a segment/domain here
-        # only update segment 9
         continue
 
     if "UBNT-ERX" in info["nodeinfo"]["hardware"]["model"]:
@@ -48,8 +49,12 @@ for node, info in d["nodes"].items():
         # https://github.com/oszilloskop/UBNT_ERX_Gluon_Factory-Image/blob/master/ERX-Sysupgrade-Problem.md
         continue
 
+    if "SBZ" in hostname or "Bei-Kelche" in hostname or "GRUEN" in hostname:
+        continue
+
+
     # filter for a release
-    if release != "2019.1.3-1-stable":
+    if "2019.1.3" not in release:
         continue
     # only specific update branches?
     if autoupdater_settings["branch"] != "stable":
@@ -101,7 +106,8 @@ for node, info in d["nodes"].items():
             leafs |= {tuple(leaf_macs)}
         except KeyError as e:
             # supernodes throw errors here if bat0 does not exist
-            print(f"KeyError: {e} for {node}")
+            if not "'bat0'" == str(e):
+                print(f"KeyError: {e} for {node}")
 
 # move leafs and offloaders to other lists
 update_offloaders = {}
