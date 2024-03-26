@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # SPDX-License-Identifier: BSD-2-Clause
 
@@ -125,17 +125,18 @@ for node, info in d["nodes"].items():
 
     if model in deprecated:
         addresses[owner].append((model, hostname, node_id))
-    
+
 
 with open("contact_addresses.txt", "w") as f:
     with open("contact_addresses_single.txt", "w") as f_single:
         for address, old_nodes in addresses.items():
-            for old_node in old_nodes:
-                model, hostname, node = old_node
+
             if len(old_nodes) == 1:
+                for old_node in old_nodes:
+                    model, hostname, node = old_node
                 f_single.write(
-                f"{address} \t\t# {model, hostname, node}\n"
-            )
+                    f"{address} \t\t# {model, hostname, node}\n"
+                )
             else:
                 f.write(
                     f"{address} \t\t# {old_nodes}\n"

@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 
 # SPDX-License-Identifier: BSD-2-Clause
 
@@ -49,12 +49,9 @@ for node, info in d["nodes"].items():
         # https://github.com/oszilloskop/UBNT_ERX_Gluon_Factory-Image/blob/master/ERX-Sysupgrade-Problem.md
         continue
 
-    if "SBZ" in hostname or "Bei-Kelche" in hostname or "GRUEN" in hostname:
-        continue
-
 
     # filter for a release
-    if "2019.1.3" not in release:
+    if release and "202" in release:
         continue
     # only specific update branches?
     if autoupdater_settings["branch"] != "stable":
