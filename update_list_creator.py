@@ -49,7 +49,6 @@ for node, info in d["nodes"].items():
         # https://github.com/oszilloskop/UBNT_ERX_Gluon_Factory-Image/blob/master/ERX-Sysupgrade-Problem.md
         continue
 
-
     # filter for a release
     if release and "202" in release:
         continue
@@ -77,16 +76,18 @@ for node, info in d["nodes"].items():
     if not gateway_nexthop:
         # if we do not have a nexthop - assume we are a leaf
         is_leaf = True
-    
+
     try:
-        vpn_values = info["statistics"]["mesh_vpn"]["groups"]["backbone"]["peers"].values()
+        vpn_values = info["statistics"]["mesh_vpn"]["groups"]["backbone"][
+            "peers"
+        ].values()
         if not any(vpn_values):
             # if we did not establish a vpn connection, we are a leaf
             is_leaf = True
     except KeyError:
         # if we do not have mesh_vpn active, we are a leaf too
         is_leaf = True
-    
+
     for macs in update_nodes.keys():
         if gateway_nexthop in macs:
             # add the nexthop to our nexthop list to remove it afterwards
@@ -149,7 +150,7 @@ with open("update_offloaders.txt", "w") as f:
 
 whole_list = update_nodes | update_offloaders | update_leafs
 with open("update_all.txt", "w") as f:
-    for macs, tuples in sorted(whole_list.items(), key=lambda x:x[1][2]):
+    for macs, tuples in sorted(whole_list.items(), key=lambda x: x[1][2]):
         address, node, hostname = tuples
         f.write(
             f"allow {address}; # https://map.aachen.freifunk.net/#!/en/map/{node} - {hostname}\n"

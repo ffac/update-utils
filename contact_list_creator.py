@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: BSD-2-Clause
 
 import json
+import re
 
 """
 This tool helps to create nginx update lists for Freifunk migrations.
@@ -17,7 +18,9 @@ with open("state.json", "r") as f:
     d = json.load(f)
 
 from collections import defaultdict
+
 addresses = defaultdict(list)
+local_addresses = defaultdict(list)
 
 deprecated = [
     "A5-V11",
@@ -118,26 +121,39 @@ for node, info in d["nodes"].items():
     owner = info["nodeinfo"]["owner"]
     if not owner:
         continue
-    owner = owner.get("contact")
+    owner = owner.get("contact", "").strip()
     model = info["nodeinfo"]["hardware"].get("model")
     hostname = info["nodeinfo"]["hostname"]
     node_id = info["nodeinfo"]["node_id"]
 
+    if "k.albrecht@dueren.de" in owner:
+        owner = "k.albrecht@dueren.de"
+
+    owner = owner.replace(" (ät) ", "@")
+    owner = owner.replace(" dot ", ".")
+    owner = owner.replace(" at ", "@")
+    owner = owner.replace(" punkt ", ".")
+    owner = owner.replace("piratenpartei-aachen-de", "piratenpartei-aachen.de")
+
     if model in deprecated:
-        addresses[owner].append((model, hostname, node_id))
+        if re.match(r"[^@]+@[^@]+\.[^@]+", owner):
+            addresses[owner].append((model, hostname, node_id))
+        else:
+            local_addresses[owner].append((model, hostname, node_id))
 
+single_node_addresses = {}
+multi_node_addresses = {}
+for address, old_nodes in addresses.items():
+    if len(old_nodes) == 1:
+        single_node_addresses[address] = old_nodes
+    else:
+        multi_node_addresses[address] = old_nodes
 
-with open("contact_addresses.txt", "w") as f:
-    with open("contact_addresses_single.txt", "w") as f_single:
-        for address, old_nodes in addresses.items():
+with open("contact_addresses_single.json", "w") as f:
+    json.dump(sorted(single_node_addresses.items()), f, indent=4, ensure_ascii=False)
 
-            if len(old_nodes) == 1:
-                for old_node in old_nodes:
-                    model, hostname, node = old_node
-                f_single.write(
-                    f"{address} \t\t# {model, hostname, node}\n"
-                )
-            else:
-                f.write(
-                    f"{address} \t\t# {old_nodes}\n"
-                )
+with open("contact_addresses_multi.json", "w") as f:
+    json.dump(sorted(multi_node_addresses.items()), f, indent=4, ensure_ascii=False)
+
+with open("local_addresses.json", "w") as f:
+    json.dump(sorted(local_addresses.items()), f, indent=4, ensure_ascii=False)
