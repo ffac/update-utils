@@ -70,7 +70,7 @@ https://map.aachen.freifunk.net/#!/en/map/{routerid}
 Sie setzen einige veraltete Freifunk-Router ein.
 Ihre Mail-Adresse ist auf diesen Routern als Kontakt-Adresse eingetragen.
 
-Diese Geräte sind nun seit mehreren Jahren veraltet, erhalten keine Sicherheits-Updates und sollten in den nächsten Wochen ersetzt werden,um Freifunk flächendeckend schnell und aktuell zu halten.
+Diese Geräte sind nun seit mehreren Jahren veraltet, erhalten keine Sicherheits-Updates und sollten in den nächsten Wochen ersetzt werden, um Freifunk flächendeckend schnell und aktuell zu halten.
 
 Die betroffenen Router sind:
 
