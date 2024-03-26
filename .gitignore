@@ -4,3 +4,4 @@
 *.json
 *.pyc
 *.orig
+.env
