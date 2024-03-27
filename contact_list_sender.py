@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-import smtplib
 import json
 import os
+import smtplib
 from email.message import EmailMessage
 
 with open("contact_addresses_multi.json", "r") as f:
@@ -23,7 +23,7 @@ smtp_server.set_debuglevel(False)
 smtp_server.login(smtp_user, password)
 smtp_server.set_debuglevel(1)
 
-for address, nodes in single_addresses[:1]:
+for address, nodes in single_addresses:
     model, name, routerid = nodes[0]
 
     content = f"""Hallo zusammen,
@@ -55,7 +55,7 @@ Ihr Freiwilligen-Team vom Freifunk Aachen
     msg.set_content(content)
     smtp_server.send_message(msg)
 
-for address, nodes in multi_addresses[:1]:
+for address, nodes in multi_addresses:
     router_string = ""
     for node in nodes:
         model, name, routerid = node
