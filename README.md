@@ -1,10 +1,13 @@
 <!--
 SPDX-License-Identifier: BSD-2-Clause
 -->
+#  update-utils
 
-# update-utils
+This repository contains some scripts used for the operation of Freifunk Aachen.
 
-This script helps to migrate multiple nodes.
+## allow updates allowance 
+
+The `update_list_creator.py` script helps to migrate multiple nodes.
 It is very FFAC specific in a way that it requires:
 
 * one single update server which is requested by all nodes
@@ -13,3 +16,16 @@ It is very FFAC specific in a way that it requires:
 
 If this is also what you need to do.
 This might help you with some adjustments.
+
+
+## Mail Sending Usage
+
+To use this one can adjust the filters in `contact_list_creator.py` to your needs, which will create two lists - one for addresses which are only existing as contact in a single device - and one for addresses referenced in multiple devices.
+
+These two jsons can then be adjusted manually if needed or looked through.
+
+A third json `local_addresses.json` is created containing all contact entries which do no look like a mail address.
+These might be phone numbers, plain text or nicknames.
+
+Finally, you can use `contact_list_sender.py` and adjust the message text to your needs.
+Which is used to send messages to the participants of your list.
