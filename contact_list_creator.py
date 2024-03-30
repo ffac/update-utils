@@ -126,20 +126,19 @@ for node, info in d["nodes"].items():
     hostname = info["nodeinfo"]["hostname"]
     node_id = info["nodeinfo"]["node_id"]
 
-    if "k.albrecht@dueren.de" in owner:
-        owner = "k.albrecht@dueren.de"
-
     owner = owner.replace(" (ät) ", "@")
     owner = owner.replace(" dot ", ".")
     owner = owner.replace(" at ", "@")
     owner = owner.replace(" punkt ", ".")
-    owner = owner.replace("piratenpartei-aachen-de", "piratenpartei-aachen.de")
 
-    if model in deprecated:
-        if re.match(r"[^@]+@[^@]+\.[^@]+", owner):
-            addresses[owner].append((model, hostname, node_id))
-        else:
-            local_addresses[owner].append((model, hostname, node_id))
+    # only match deprecated
+    if model not in deprecated:
+        continue
+
+    if re.match(r"[^@]+@[^@]+\.[^@]+", owner):
+        addresses[owner].append((model, hostname, node_id))
+    else:
+        local_addresses[owner].append((model, hostname, node_id))
 
 single_node_addresses = {}
 multi_node_addresses = {}
