@@ -21,6 +21,8 @@ update_nodes = {}
 for node, info in d["nodes"].items():
     connected = info["statistics"]["clients"]["total"]
     release = info["nodeinfo"]["software"]["firmware"].get("release")
+    hostname = info["nodeinfo"]["hostname"]
+
     addresses = info["nodeinfo"]["network"]["addresses"]
     raw_address = list(filter(lambda x: x.startswith("2a03"), addresses))
     if raw_address:
@@ -28,7 +30,6 @@ for node, info in d["nodes"].items():
     else:
         print(f"no public ipv6 for {hostname}")
         address = addresses[0]
-    hostname = info["nodeinfo"]["hostname"]
     # of course, only online nodes are updated
 
     if not info["online"]:
