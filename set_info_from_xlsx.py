@@ -47,7 +47,7 @@ for node, info in d["nodes"].items():
         primary_email = node_data["primary_email"]
         print(f"ssh root@{address}")
         if isinstance(nodename, str):
-            print(f"pretty-hostname {nodename}")
+            print(f"pretty-hostname ffsg-{nodename}")
         print(f"uci set gluon-node-info.@owner[0]=owner; uci set gluon-node-info.@owner[0].contact='{primary_email}'")
         print(f"uci set gluon-node-info.@location[0]='location'; uci set gluon-node-info.@location[0].share_location='1';uci set gluon-node-info.@location[0].latitude='{lat}';uci set gluon-node-info.@location[0].longitude='{long}';uci commit gluon-node-info")
         print("")
