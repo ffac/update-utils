@@ -5,10 +5,8 @@
 import json
 
 """
-This tool helps to create nginx update lists for Freifunk migrations.
-Those are needed when wanting to migrate a community efficiently by first finding all the independent nodes
-Then updating the leaf nodes and finally all other nodes.
-It is recommended to use ffac-scheduled-sysupgrade and ffac-autoupdater-wifi-fallback packages in the firmware to help with the migration.
+This tool helps to apply a XLSX changeset provided by a private company to add node data through SSH, if available.
+It prints the uci statements needed to configure the nodes accordingly and the ssh connection strings.
 """
 
 
