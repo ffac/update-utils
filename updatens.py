@@ -6,18 +6,23 @@ from itertools import islice
 
 import dns
 import dns.query
+import dns.resolver
 import dns.tsigkeyring
 import requests
 
-host_ip = str(socket.gethostbyname("magrathea.aachalon.de"))
+zone = "nodes.ffac.rocks"
+
+# resolve the IP of the AXFR target dynamically by reading the SOA record
+resolver = dns.resolver.Resolver()
+soa_answer = resolver.resolve(zone, dns.rdatatype.SOA)
+host_ip = str(socket.gethostbyname(str(soa_answer[0].mname)))
 # xfr is only allowed coming from the monitor or DNS host
 
-# somehow it does not work using our dns for now
+# somehow it does not work using our own dns for now
 # DNS_SERVER = str(socket.gethostbyname('dns.freifunk-aachen.de'))
 DNS_SERVER = "8.8.8.8"
 DEBUG = False
 
-zone = "nodes.ffac.rocks"
 key_name = "nodes.ffac.rocks."
 key_secret = os.getenv("ZONE_SECRET_KEY", "")
 key_algorithm = "hmac-sha512"
