@@ -8,32 +8,26 @@ import dns
 import dns.query
 import dns.resolver
 import dns.tsigkeyring
+import dns.update
 import requests
 
-zone = "nodes.ffac.rocks"
+zone = "nodes.ffac.rocks."
 
-# resolve the IP of the AXFR target dynamically by reading the SOA record
-resolver = dns.resolver.Resolver()
-soa_answer = resolver.resolve(zone, dns.rdatatype.SOA)
-host_ip = str(socket.gethostbyname(str(soa_answer[0].mname)))
-# xfr is only allowed coming from the monitor or DNS host
-
-# somehow it does not work using our own dns for now
-# DNS_SERVER = str(socket.gethostbyname('dns.freifunk-aachen.de'))
-DNS_SERVER = "8.8.8.8"
 DEBUG = False
 
 key_name = "nodes.ffac.rocks."
 key_secret = os.getenv("ZONE_SECRET_KEY", "")
+assert len(key_secret) > 10
 key_algorithm = "hmac-sha512"
 # Parse the key data and create a TSIG keyring
-KEYRING = dns.tsigkeyring.from_text({key_name: key_secret})
+KEYRING = dns.tsig.Key(key_name, key_secret, key_algorithm)
+# KEYRING = dns.tsigkeyring.from_text({key_name: key_secret})
 # url from which the current state is crawled
 url = "https://map.aachen.freifunk.net/data/nodes.json"
 
 # nsupdate can only handle 300-400 requests at once
 # so we are running in batches of 300
-BATCH_SIZE = 300
+BATCH_SIZE = 400
 
 
 def batched(iterable, n):
@@ -59,9 +53,10 @@ def crawl_pairs_from_map(url):
         addrs = nodeinfo["network"]["addresses"]
         addrs = list(filter(lambda x: not x.startswith("f"), addrs))
         host = nodeinfo["hostname"]
-        replacements = ["`", "´", ".", " "]
+        replacements = ["`", "´", ".", " ", "#", "_", "'", "+", "&"]
         for rep in replacements:
             host = host.replace(rep, "-")
+        host = host.strip("-")
         host = host.encode("idna").decode().lower()
 
         pairs.append((host, addrs))
@@ -75,7 +70,6 @@ def crawl_stat_from_xfr(host_ip, zone):
     for dns_message in zone_entries:
         # dns_message has 4 sections
         # second section contains dns names, others are irrelevant
-        print("entries in msg", dns_message.sections[1])
         filt = filter(lambda e: e.rdtype == dns.rdatatype.AAAA, dns_message.sections[1])
         for entry in filt:
             # print(entry.name, list(map(lambda x: str(x), entry.items.keys())))
@@ -85,34 +79,55 @@ def crawl_stat_from_xfr(host_ip, zone):
     return current_entries
 
 
-def replace_changed_entries(changed_pairs, zone):
-    for batch in batched(changed_pairs, BATCH_SIZE):
-        update = dns.update.Update(zone, keyring=KEYRING)
-        for host, addrs in pairs:
-            dns_name = f"{host}.{zone}"
-            # to add multiple for a single host, we need this Rdataset type
-            rdataset = dns.rdataset.Rdataset(
-                dns.rdataclass.IN, dns.rdatatype.AAAA, ttl=300
-            )
-            for addr in addrs:
-                rdata = dns.rdata.from_text(dns.rdataclass.IN, dns.rdatatype.AAAA, addr)
-                rdataset.add(rdata)
-            update.replace(dns_name, rdataset)
-        response = dns.query.tcp(update, DNS_SERVER)
-        print(response)
+def replace_changed_entries(changed_pairs, zone, host_ip):
+    try:
+        for batch in batched(changed_pairs, BATCH_SIZE):
+            update = dns.update.Update(zone, keyring=KEYRING)
+            for host, addrs in batch:
+                dns_name = f"{host}.{zone}"
+                # to add multiple for a single host, we need this Rdataset type
+                # otherwise this would also work:
+                # update.replace(dns_name, 300, "AAAA", addr[0])
+                if addrs:
+                    rdataset = dns.rdataset.Rdataset(
+                        dns.rdataclass.IN, dns.rdatatype.AAAA, ttl=300
+                    )
+                    for addr in addrs:
+                        rdata = dns.rdata.from_text(
+                            dns.rdataclass.IN, dns.rdatatype.AAAA, addr
+                        )
+                        rdataset.add(rdata)
+                    update.add(dns_name, rdataset)
+            response = dns.query.tcp(update, host_ip)
+            if response.rcode() > 0:
+                print("error in ", update, response)
+    except dns.exception.TooBig:
+        print(f"dns message is too big with {len(update.index)}")
 
 
-def delete_leftover_hosts(to_remove: list, zone):
-    for batch in batched(to_remove, BATCH_SIZE):
-        update = dns.update.Update(zone, keyring=KEYRING)
-        for host, _ in batch:
-            dns_name = f"{host}.{zone}"
-            update.delete(dns_name, dns.rdatatype.AAAA)
-        response = dns.query.tcp(update, DNS_SERVER)
-        print(response)
+def delete_leftover_hosts(to_remove: list, zone, dns_server):
+    try:
+        for batch in batched(to_remove, BATCH_SIZE):
+            update = dns.update.Update(zone, keyring=KEYRING)
+            for host, _ in batch:
+                dns_name = f"{host}.{zone}"
+                update.delete(dns_name, dns.rdatatype.AAAA)
+            response = dns.query.tcp(update, dns_server)
+            print(response)
+    except dns.exception.TooBig:
+        print(f"dns message is too big with {len(update.index)}")
 
 
 if __name__ == "__main__":
+    # resolve the IP of the AXFR target dynamically by reading the SOA record
+    resolver = dns.resolver.Resolver()
+    try:
+        soa_answer = resolver.resolve(zone, dns.rdatatype.SOA)
+        host_ip = str(socket.gethostbyname(str(soa_answer[0].mname)))
+    except Exception as e:
+        print(f"error: {e}")
+        exit(1)
+    # xfr is only allowed coming from the monitor or DNS host
     pairs = crawl_pairs_from_map(url)
     current_entries = crawl_stat_from_xfr(host_ip, zone)
     # gives TransferError: Zone transfer error: REFUSED
@@ -152,5 +167,5 @@ if __name__ == "__main__":
         with open("to_remove.json", "w") as f:
             json.dump(to_remove, f, indent=4)
     else:
-        replace_changed_entries(to_replace, zone)
-        delete_leftover_hosts(to_remove, zone)
+        replace_changed_entries(to_replace, zone, host_ip)
+        delete_leftover_hosts(to_remove, zone, host_ip)
