@@ -12,25 +12,23 @@ import dns.update
 import requests
 
 zone = "nodes.ffac.rocks."
+# url from which the current state is crawled
+url = "https://map.aachen.freifunk.net/data/nodes.json"
 
 DEBUG = False
 
-key_name = "nodes.ffac.rocks."
 key_secret = os.getenv("ZONE_SECRET_KEY", "")
 assert len(key_secret) > 10
 key_algorithm = "hmac-sha512"
 # Parse the key data and create a TSIG keyring
-KEYRING = dns.tsig.Key(key_name, key_secret, key_algorithm)
-# KEYRING = dns.tsigkeyring.from_text({key_name: key_secret})
-# url from which the current state is crawled
-url = "https://map.aachen.freifunk.net/data/nodes.json"
+KEYRING = dns.tsig.Key(zone, key_secret, key_algorithm)
 
 # nsupdate can only handle 300-400 requests at once
 # so we are running in batches of 300
 BATCH_SIZE = 400
 
 
-def batched(iterable, n):
+def batched(iterable: list, n: int) -> list:
     # if python >= 3.12:
     # from itertools import batched
     # https://docs.python.org/3/library/itertools.html#itertools.batched
@@ -42,7 +40,7 @@ def batched(iterable, n):
         yield batch
 
 
-def crawl_pairs_from_map(url):
+def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
     t = requests.get(url)
     t.raise_for_status()
     nodes = t.json()["nodes"]
@@ -64,7 +62,7 @@ def crawl_pairs_from_map(url):
     return list(sorted(pairs))
 
 
-def crawl_stat_from_xfr(host_ip, zone):
+def crawl_stat_from_xfr(host_ip: str, zone: str) -> list[dict[str, list[str]]]:
     zone_entries = list(dns.query.xfr(host_ip, zone))
     current_entries = {}
     for dns_message in zone_entries:
@@ -72,14 +70,17 @@ def crawl_stat_from_xfr(host_ip, zone):
         # second section contains dns names, others are irrelevant
         filt = filter(lambda e: e.rdtype == dns.rdatatype.AAAA, dns_message.sections[1])
         for entry in filt:
-            # print(entry.name, list(map(lambda x: str(x), entry.items.keys())))
             current_entries[str(entry.name)] = list(
                 map(lambda x: str(x), entry.items.keys())
             )
     return current_entries
 
 
-def replace_changed_entries(changed_pairs, zone, host_ip):
+def replace_changed_entries(
+    changed_pairs: list[dict[str, list[str]]],
+    zone: str,
+    host_ip: str,
+):
     try:
         for batch in batched(changed_pairs, BATCH_SIZE):
             update = dns.update.Update(zone, keyring=KEYRING)
@@ -105,7 +106,7 @@ def replace_changed_entries(changed_pairs, zone, host_ip):
         print(f"dns message is too big with {len(update.index)}")
 
 
-def delete_leftover_hosts(to_remove: list, zone, dns_server):
+def delete_leftover_hosts(to_remove: list, zone: str, dns_server: str):
     try:
         for batch in batched(to_remove, BATCH_SIZE):
             update = dns.update.Update(zone, keyring=KEYRING)
