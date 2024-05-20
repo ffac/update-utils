@@ -1,5 +1,6 @@
 #! /usr/env/python3
 # requires requests, dnspython
+import logging
 import os
 import socket
 from itertools import islice
@@ -15,8 +16,6 @@ zone = "nodes.ffac.rocks."
 # url from which the current state is crawled
 url = "https://map.aachen.freifunk.net/data/nodes.json"
 
-DEBUG = False
-
 key_secret = os.getenv("ZONE_SECRET_KEY", "")
 assert len(key_secret) > 10
 key_algorithm = "hmac-sha512"
@@ -26,6 +25,21 @@ KEYRING = dns.tsig.Key(zone, key_secret, key_algorithm)
 # nsupdate can only handle 300-400 requests at once
 # so we are running in batches of 300
 BATCH_SIZE = 400
+
+
+def is_idna_compliant(string):
+    try:
+        string.encode("idna")
+        return True
+    except Exception:
+        return False
+
+
+def to_idna_conform(string):
+    # Filter out non-IDNA compliant characters
+    cleaned_string = "".join(char for char in string if is_idna_compliant(char))
+    # Encode to IDNA
+    return cleaned_string.encode("idna").decode("ascii")
 
 
 def batched(iterable: list, n: int) -> list:
@@ -54,9 +68,9 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
         replacements = ["`", "´", ".", " ", "#", "_", "'", "+", "&"]
         for rep in replacements:
             host = host.replace(rep, "-")
-        host = host.strip("-")
-        host = host.encode("idna").decode().lower()
-
+        host = host.strip("-").lower()
+        if not is_idna_compliant(host):
+            host = to_idna_conform(host)
         pairs.append((host, addrs))
 
     return list(sorted(pairs))
@@ -97,13 +111,13 @@ def replace_changed_entries(
                         rdata = dns.rdata.from_text(
                             dns.rdataclass.IN, dns.rdatatype.AAAA, addr
                         )
-                        rdataset.add(rdata)
-                    update.add(dns_name, rdataset)
+                        rdataset.replace(rdata)
+                    update.replace(dns_name, rdataset)
             response = dns.query.tcp(update, host_ip)
             if response.rcode() > 0:
-                print("error in ", update, response)
+                logging.error(f"error in {update} {response}")
     except dns.exception.TooBig:
-        print(f"dns message is too big with {len(update.index)}")
+        logging.error(f"dns message is too big with {len(update.index)}")
 
 
 def delete_leftover_hosts(to_remove: list, zone: str, dns_server: str):
@@ -114,19 +128,22 @@ def delete_leftover_hosts(to_remove: list, zone: str, dns_server: str):
                 dns_name = f"{host}.{zone}"
                 update.delete(dns_name, dns.rdatatype.AAAA)
             response = dns.query.tcp(update, dns_server)
-            print(response)
+            if response.rcode() > 0:
+                logging.error(f"error in {update} {response}")
     except dns.exception.TooBig:
-        print(f"dns message is too big with {len(update.index)}")
+        logging.error(f"dns message is too big with {len(update.index)}")
 
 
 if __name__ == "__main__":
+    DEBUG = False
+    logging.basicConfig(level="INFO" if DEBUG else None)
     # resolve the IP of the AXFR target dynamically by reading the SOA record
     resolver = dns.resolver.Resolver()
     try:
         soa_answer = resolver.resolve(zone, dns.rdatatype.SOA)
         host_ip = str(socket.gethostbyname(str(soa_answer[0].mname)))
     except Exception as e:
-        print(f"error: {e}")
+        logging.error(f"error: {e}")
         exit(1)
     # xfr is only allowed coming from the monitor or DNS host
     pairs = crawl_pairs_from_map(url)
@@ -154,10 +171,11 @@ if __name__ == "__main__":
         to_remove.append((host, addrs))
     # to_remove now only contains entries which are not valid anymore
 
+    logging.info(f"current entries {len(current_entries)}")
+    logging.info(f"changing entries {len(to_replace)}")
+    logging.info(f"deleting {len(to_remove)}")
     if DEBUG:
         import json
-
-        print("anzahl einträge", len(current_entries))
 
         with open("current_entries.json", "w") as f:
             json.dump(current_entries, f, indent=4)
