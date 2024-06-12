@@ -103,7 +103,7 @@ def replace_changed_entries(
                 # to add multiple for a single host, we need this Rdataset type
                 # otherwise this would also work:
                 # update.replace(dns_name, 300, "AAAA", addr[0])
-                if addrs:
+                if host and addrs:
                     rdataset = dns.rdataset.Rdataset(
                         dns.rdataclass.IN, dns.rdatatype.AAAA, ttl=300
                     )
