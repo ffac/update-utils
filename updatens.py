@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # requires requests, dnspython
-import logging
 import os
 import socket
 from itertools import islice
@@ -11,6 +10,7 @@ import dns.resolver
 import dns.tsigkeyring
 import dns.update
 import requests
+import logging
 
 zone = "nodes.ffac.rocks."
 # url from which the current state is crawled
@@ -39,7 +39,7 @@ def to_idna_conform(string):
     # Filter out non-IDNA compliant characters
     cleaned_string = "".join(char for char in string if is_idna_compliant(char))
     # Encode to IDNA
-    return cleaned_string.encode("idna").decode("ascii")
+    return cleaned_string.encode("idna").decode("utf-8")
 
 
 def batched(iterable: list, n: int) -> list:
@@ -69,8 +69,7 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
         for rep in replacements:
             host = host.replace(rep, "-")
         host = host.strip("-").lower()
-        if not is_idna_compliant(host):
-            host = to_idna_conform(host)
+        host = to_idna_conform(host)
         pairs.append((host, addrs))
 
     return list(sorted(pairs))
@@ -84,7 +83,7 @@ def crawl_stat_from_xfr(host_ip: str, zone: str) -> list[dict[str, list[str]]]:
         # second section contains dns names, others are irrelevant
         filt = filter(lambda e: e.rdtype == dns.rdatatype.AAAA, dns_message.sections[1])
         for entry in filt:
-            current_entries[str(entry.name)] = list(
+            current_entries[str(entry.name).lower()] = list(
                 map(lambda x: str(x), entry.items.keys())
             )
     return current_entries
@@ -103,7 +102,7 @@ def replace_changed_entries(
                 # to add multiple for a single host, we need this Rdataset type
                 # otherwise this would also work:
                 # update.replace(dns_name, 300, "AAAA", addr[0])
-                if host and addrs:
+                if addrs and host:
                     rdataset = dns.rdataset.Rdataset(
                         dns.rdataclass.IN, dns.rdatatype.AAAA, ttl=300
                     )
@@ -111,14 +110,16 @@ def replace_changed_entries(
                         rdata = dns.rdata.from_text(
                             dns.rdataclass.IN, dns.rdatatype.AAAA, addr
                         )
-                        rdataset.replace(rdata)
+                        rdataset.add(rdata)
                     update.replace(dns_name, rdataset)
             response = dns.query.tcp(update, host_ip)
             if response.rcode() > 0:
                 logging.error(f"error in {update} {response}")
     except dns.exception.TooBig:
         logging.error(f"dns message is too big with {len(update.index)}")
-
+    except Exception:
+        logging.error(batch)
+        raise
 
 def delete_leftover_hosts(to_remove: list, zone: str, dns_server: str):
     try:
@@ -179,6 +180,8 @@ if __name__ == "__main__":
 
         with open("current_entries.json", "w") as f:
             json.dump(current_entries, f, indent=4)
+        with open("current_entries_map.json", "w") as f:
+            json.dump(pairs, f, indent=4)
 
         with open("to_replace.json", "w") as f:
             json.dump(to_replace, f, indent=4)
