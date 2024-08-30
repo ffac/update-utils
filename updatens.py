@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#! /usr/bin/env python3
 # requires requests, dnspython
 import os
 import socket
@@ -64,7 +64,7 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
         nodeinfo = node["nodeinfo"]
         addrs = nodeinfo["network"]["addresses"]
         addrs = list(filter(lambda x: not x.startswith("f"), addrs))
-        host = nodeinfo["hostname"]
+        host = nodeinfo["hostname"].strip()
         replacements = ["`", "´", ".", " ", "#", "_", "'", "+", "&"]
         for rep in replacements:
             host = host.replace(rep, "-")
@@ -75,17 +75,20 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
     return list(sorted(pairs))
 
 
-def crawl_stat_from_xfr(host_ip: str, zone: str) -> list[dict[str, list[str]]]:
+def crawl_stat_from_xfr(host_ip: str, zone: str) -> dict[str, list[str]]:
     zone_entries = list(dns.query.xfr(host_ip, zone))
-    current_entries = {}
+    current_entries: dict[str, list[str]] = {}
     for dns_message in zone_entries:
         # dns_message has 4 sections
         # second section contains dns names, others are irrelevant
         filt = filter(lambda e: e.rdtype == dns.rdatatype.AAAA, dns_message.sections[1])
         for entry in filt:
-            current_entries[str(entry.name).lower()] = list(
-                map(lambda x: str(x), entry.items.keys())
-            )
+            host = str(entry.name).lower()
+            keys = list(map(lambda x: str(x), entry.items.keys()))
+            if host in current_entries.keys():
+                current_entries[host].extend(keys)
+            else:
+                current_entries[host] = keys
     return current_entries
 
 
@@ -97,6 +100,7 @@ def replace_changed_entries(
     try:
         for batch in batched(changed_pairs, BATCH_SIZE):
             update = dns.update.Update(zone, keyring=KEYRING)
+            delete = dns.update.Update(zone, keyring=KEYRING)
             for host, addrs in batch:
                 dns_name = f"{host}.{zone}"
                 # to add multiple for a single host, we need this Rdataset type
@@ -111,13 +115,18 @@ def replace_changed_entries(
                             dns.rdataclass.IN, dns.rdatatype.AAAA, addr
                         )
                         rdataset.add(rdata)
-                    update.replace(dns_name, rdataset)
+                    delete.delete(dns_name)
+                    update.add(dns_name, rdataset)
+            response = dns.query.tcp(delete, host_ip)
+            if response.rcode() > 0:
+                logging.error(f"error in replace_changed - {update} {response} - for {delete}")
             response = dns.query.tcp(update, host_ip)
             if response.rcode() > 0:
                 logging.error(f"error in {update} {response}")
     except dns.exception.TooBig:
         logging.error(f"dns message is too big with {len(update.index)}")
     except Exception:
+        logging.error("something went wrong")
         logging.error(batch)
         raise
 
@@ -130,13 +139,14 @@ def delete_leftover_hosts(to_remove: list, zone: str, dns_server: str):
                 update.delete(dns_name, dns.rdatatype.AAAA)
             response = dns.query.tcp(update, dns_server)
             if response.rcode() > 0:
-                logging.error(f"error in {update} {response}")
+                logging.error(f"error in delete_leftover - {update} {response} - for {update}")
     except dns.exception.TooBig:
         logging.error(f"dns message is too big with {len(update.index)}")
 
 
 if __name__ == "__main__":
     DEBUG = False
+    NOOP = False
     logging.basicConfig(level="INFO" if DEBUG else None)
     # resolve the IP of the AXFR target dynamically by reading the SOA record
     resolver = dns.resolver.Resolver()
@@ -158,13 +168,13 @@ if __name__ == "__main__":
     for host, addrs in pairs:
         try:
             # in any case, remove the entry, so that everything else can be deleted
-            current_addrs = entries.pop(host)
+            current_addrs = entries.pop(host.lower())
         except KeyError:
             current_addrs = [None]
 
         # if the addresses are not as expected - we need to replace them
         if sorted(addrs) != sorted(current_addrs):
-            to_replace.append((host, addrs))
+            to_replace.append((host.encode("utf-8").decode("utf-8"), addrs))
 
     to_remove = []
     # we can now add the leftovers to our remove list
@@ -175,7 +185,7 @@ if __name__ == "__main__":
     logging.info(f"current entries {len(current_entries)}")
     logging.info(f"changing entries {len(to_replace)}")
     logging.info(f"deleting {len(to_remove)}")
-    if DEBUG:
+    if NOOP:
         import json
 
         with open("current_entries.json", "w") as f:
