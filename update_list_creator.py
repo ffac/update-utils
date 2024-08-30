@@ -13,7 +13,7 @@ It is recommended to use ffac-scheduled-sysupgrade and ffac-autoupdater-wifi-fal
 
 
 # take the /var/lib/yanic/state.json and open it
-with open("state.json", "r") as f:
+with open("state.json") as f:
     d = json.load(f)
 
 update_nodes = {}
@@ -23,12 +23,12 @@ for node, info in d["nodes"].items():
     release = info["nodeinfo"]["software"]["firmware"].get("release")
     addresses = info["nodeinfo"]["network"]["addresses"]
     raw_address = list(filter(lambda x: x.startswith("2a03"), addresses))
+    hostname = info["nodeinfo"]["hostname"]
     if raw_address:
         address = raw_address[0]
     else:
         print(f"no public ipv6 for {hostname}")
         address = addresses[0]
-    hostname = info["nodeinfo"]["hostname"]
     # of course, only online nodes are updated
 
     if not info["online"]:
@@ -40,7 +40,7 @@ for node, info in d["nodes"].items():
         continue
 
     # if not "2a03:2260:3006" in address:
-    if not "2a03:2260:3006:" in address:
+    if "2a03:2260:3006:" not in address:
         # filter for a segment/domain here
         continue
 

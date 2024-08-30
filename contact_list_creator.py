@@ -4,6 +4,7 @@
 
 import json
 import re
+from collections import defaultdict
 
 """
 This tool helps to create nginx update lists for Freifunk migrations.
@@ -14,10 +15,9 @@ It is recommended to use ffac-scheduled-sysupgrade and ffac-autoupdater-wifi-fal
 
 
 # take the /var/lib/yanic/state.json and open it
-with open("state.json", "r") as f:
+with open("state.json") as f:
     d = json.load(f)
 
-from collections import defaultdict
 
 addresses = defaultdict(list)
 local_addresses = defaultdict(list)

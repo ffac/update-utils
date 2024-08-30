@@ -5,10 +5,10 @@ import os
 import smtplib
 from email.message import EmailMessage
 
-with open("contact_addresses_multi.json", "r") as f:
+with open("contact_addresses_multi.json") as f:
     multi_addresses = json.load(f)
 
-with open("contact_addresses_single.json", "r") as f:
+with open("contact_addresses_single.json") as f:
     single_addresses = json.load(f)
 
 smtp_host = os.getenv("SMTP_SERVER")
