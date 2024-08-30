@@ -29,3 +29,28 @@ These might be phone numbers, plain text or nicknames.
 
 Finally, you can use `contact_list_sender.py` and adjust the message text to your needs.
 Which is used to send messages to the participants of your list.
+
+### Usage
+
+```
+git clone $this_repo
+scp ffac-monitor:/var/lib/yanic/state.json .
+python contact_list_creator.py
+
+# check resulting json files - adjust or inspect
+
+# fill in relevant SMTP secrets in .env
+export $(cat .env | xargs)
+python contact_list_sender.py
+```
+
+Eventually, you need to do this from a priviliged IP address to avoid the mailcow SMTP ratelimit.
+
+## nameserver update script
+
+1. add the ZONE_SECRET_KEY to the .env file and load it using `export $(cat .env | xargs)`
+2. adjust the url and zone in the `updatens.py` script
+3. run the `updatens.py` script
+
+You can also run this hourly as a cron job like this:
+`7 * * * * cd /home/ffac/nsupdater && export $(cat .env | xargs) && python3 updatens.py`

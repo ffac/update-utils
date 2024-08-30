@@ -48,7 +48,7 @@ Ihr Freiwilligen-Team vom Freifunk Aachen
 """
 
     msg = EmailMessage()
-    msg["Subject"] = "Freifunk Aachen - veralteten Router ersetzen"
+    msg["Subject"] = "Freifunk Aachen - veralteten Router ersetzen - Erinnerung"
     msg["From"] = from_address
     msg["To"] = address
     msg["Reply-To"] = reply_to_address
@@ -83,12 +83,14 @@ https://freifunk-aachen.de/2022/11/23/ausmusterung-altgeraete/
 
 Bei Fragen kontaktieren Sie uns gerne unter kontakt@freifunk-aachen.de
 
+Bitte helfen sie mit, Freifunk technisch aktuell zu halten!
+
 Viele Grüße
 Ihr Freiwilligen-Team vom Freifunk Aachen
 """
 
     msg = EmailMessage()
-    msg["Subject"] = "Freifunk Aachen - veraltete Router ersetzen"
+    msg["Subject"] = "Freifunk Aachen - veraltete Router ersetzen - Erinnerung"
     msg["From"] = from_address
     msg["To"] = address
     msg["Reply-To"] = reply_to_address
