@@ -2,7 +2,10 @@
 
 import os
 import smtplib
+from datetime import datetime
 from email.message import EmailMessage
+from zoneinfo import ZoneInfo
+
 import pandas as pd
 
 DRY_RUN = True
@@ -25,13 +28,16 @@ members_data["offen_von"] = members_data["offen_von"].fillna(0).astype(int)
 members_data["offen_bis"] = members_data["offen_bis"].fillna(0).astype(int)
 
 for idx, data in members_data.iterrows():
-    if data["Kontostand"] >=0 or not data["Vorname"]:
+    # fehlender Vorname ist juristische Person, kriegt keine Mail
+    if data["Kontostand"] >= 0 or not data["Vorname"]:
         continue
 
     if data["offen_von"] != data["offen_bis"]:
-        offen_jahre = f'Die Mitgliedsbeiträge  der Jahre {data["offen_von"]} bis {data["offen_bis"]} sind noch ausstehend.'
+        offen_jahre = f"Die Mitgliedsbeiträge  der Jahre {data['offen_von']} bis {data['offen_bis']} sind noch ausstehend."
     else:
-        offen_jahre = f'Der Mitgliedsbeitrag des Jahres {data["offen_bis"]} ist noch ausstehend.'
+        offen_jahre = (
+            f"Der Mitgliedsbeitrag des Jahres {data['offen_bis']} ist noch ausstehend."
+        )
     content = f"""Hallo {data["Vorname"]} {data["Name"]},
 
 Sie sind Mitglied der Fördervereinigung freie Netzwerke Aachen e.V. (F3N Aachen e.V.)
@@ -48,6 +54,7 @@ IBAN:\t\t\tDE70 3906 0180 1225 8810 10
 Verwendungszweck:\tMitgliedsbeitrag F3N (+ ggf Name, wenn er vom Kontoinhaber abweicht)
 
 Gerne kann dafür auch ein jährlicher Dauerauftrag angelegt werden.
+Sollten Sie den Beitrag bereits vor wenigen Tagen gezahlt haben, können sie die Nachricht ignorieren.
 
 Bei Fragen kontaktieren Sie uns gerne unter kontakt@freifunk-aachen.de
 
@@ -63,6 +70,7 @@ Ihr Freiwilligen-Team vom Freifunk Aachen
     msg["From"] = from_address
     msg["To"] = data["Email"]
     msg["Reply-To"] = reply_to_address
+    msg["Date"] = datetime.now(tz=ZoneInfo("Europe/Berlin"))
     msg.set_content(content)
     smtp_server.send_message(msg)
 
