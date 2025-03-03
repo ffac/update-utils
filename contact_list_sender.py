@@ -3,7 +3,9 @@
 import json
 import os
 import smtplib
+from datetime import datetime
 from email.message import EmailMessage
+from zoneinfo import ZoneInfo
 
 with open("contact_addresses_multi.json") as f:
     multi_addresses = json.load(f)
@@ -94,6 +96,7 @@ Ihr Freiwilligen-Team vom Freifunk Aachen
     msg["From"] = from_address
     msg["To"] = address
     msg["Reply-To"] = reply_to_address
+    msg["Date"] = datetime.now(tz=ZoneInfo("Europe/Berlin"))
 
     msg.set_content(content)
     smtp_server.send_message(msg)
