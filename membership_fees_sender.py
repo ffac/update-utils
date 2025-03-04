@@ -4,7 +4,6 @@ import os
 import smtplib
 from datetime import datetime
 from email.message import EmailMessage
-from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -70,7 +69,7 @@ Ihr Freiwilligen-Team vom Freifunk Aachen
     msg["From"] = from_address
     msg["To"] = data["Email"]
     msg["Reply-To"] = reply_to_address
-    msg["Date"] = datetime.now(tz=ZoneInfo("Europe/Berlin"))
+    msg["Date"] = datetime.now().astimezone()
     msg.set_content(content)
     smtp_server.send_message(msg)
 
