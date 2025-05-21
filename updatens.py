@@ -29,7 +29,7 @@ import logging
 # location of the nodes.json where the data is taken from.
 #
 # UPDATENS_TARGET=SOA
-# the fqdn of the dns server which will be quiried. if none is given the SOA from the zone is asked.
+# the fqdn of the dns server which will be queried. if none is given the SOA from the zone is asked.
 #
 # UPDATENS_KEY_NAME=
 # the key name for the tsig. defaults to the value from UPDATENS_ZONE.
