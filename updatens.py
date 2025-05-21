@@ -12,19 +12,58 @@ import dns.update
 import requests
 import logging
 
-zone = "nodes.ffac.rocks."
-# url from which the current state is crawled
-url = "https://map.aachen.freifunk.net/data/nodes.json"
+###
+### Takes the following environment variables into account
+###
+#
+# UPDATENS_XFR_USE_AUTH=0
+# whether to use tsig authentication for zone transfers, too. update actions are always authenticated by tsig.
+#
+# UPDATENS_BATCH_SIZE=400
+# the message size of a dns update might be limited.
+#
+# UPDATENS_ZONE=nodes.ffac.rocks.
+# the (sub)domain used for the dns updates. usually ends in "."
+#
+# UPDATENS_NODES_URL=https://map.aachen.freifunk.net/data/nodes.json
+# location of the nodes.json where the data is taken from.
+#
+# UPDATENS_TARGET=SOA
+# the fqdn of the dns server which will be quiried. if none is given the SOA from the zone is asked.
+#
+# UPDATENS_KEY_NAME=
+# the key name for the tsig. defaults to the value from UPDATENS_ZONE.
+#
+# UPDATENS_KEY_ALGO=hmac-sha512
+# the key algorithm used with tsig.
+#
+# UPDATENS_KEY_SECRET=
+# the secret used with tsig.
+#
+# UPDATENS_FILTER_ADDR=f
+# filter out ip addresses from the nodes.json. the filter expression is applied with "startswith".
+#
+# UPDATENS_FILTER_INVERT=1
+# the filter expression is inverted with a not. in combination with the default filter addr every
+# address starting with "f" will not be transferred to the dns.
+#
+# UPDATENS_NOOP=0
+# UPDATENS_DEBUG=0
 
-key_secret = os.getenv("ZONE_SECRET_KEY", "")
+zone = os.getenv("UPDATENS_ZONE", "nodes.ffac.rocks.")
+# url from which the current state is crawled
+url = os.getenv("UPDATENS_NODES_URL", "https://map.aachen.freifunk.net/data/nodes.json")
+
+key_secret = os.getenv("UPDATENS_KEY_SECRET", os.getenv("ZONE_SECRET_KEY", ""))
 assert len(key_secret) > 10
-key_algorithm = "hmac-sha512"
+key_algorithm = os.getenv("UPDATENS_KEY_ALGO", "hmac-sha512")
+key_name = os.getenv("UPDATENS_KEY_NAME", zone)
 # Parse the key data and create a TSIG keyring
-KEYRING = dns.tsig.Key(zone, key_secret, key_algorithm)
+KEYRING = dns.tsig.Key(key_name, key_secret, key_algorithm)
 
 # nsupdate can only handle 300-400 requests at once
 # so we are running in batches of 300
-BATCH_SIZE = 400
+BATCH_SIZE = int(os.getenv("UPDATENS_BATCH_SIZE", "400"))
 
 
 def is_idna_compliant(string):
@@ -59,11 +98,17 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
     t.raise_for_status()
     nodes = t.json()["nodes"]
 
+    addr_filter = os.getenv("UPDATENS_FILTER_ADDR", "f")
+    addr_filter_invert = True if os.getenv("UPDATENS_FILTER_INVERT", "1") else False
+
     pairs = []
     for node in nodes:
         nodeinfo = node["nodeinfo"]
         addrs = nodeinfo["network"]["addresses"]
-        addrs = list(filter(lambda x: not x.startswith("f"), addrs))
+        if addr_filter_invert:
+            addrs = list(filter(lambda x: not x.startswith(addr_filter), addrs))
+        else:
+            addrs = list(filter(lambda x: x.startswith(addr_filter), addrs))
         host = nodeinfo["hostname"].strip()
         replacements = ["`", "´", ".", " ", "#", "_", "'", "+", "&", "/"]
         for rep in replacements:
@@ -76,7 +121,10 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
 
 
 def crawl_stat_from_xfr(host_ip: str, zone: str) -> dict[str, list[str]]:
-    zone_entries = list(dns.query.xfr(host_ip, zone))
+    if os.getenv("UPDATENS_XFR_USE_AUTH", "0") == "1":
+        zone_entries = list(dns.query.xfr(host_ip, zone, keyring=KEYRING))
+    else:
+        zone_entries = list(dns.query.xfr(host_ip, zone))
     current_entries: dict[str, list[str]] = {}
     for dns_message in zone_entries:
         # dns_message has 4 sections
@@ -145,14 +193,18 @@ def delete_leftover_hosts(to_remove: list, zone: str, dns_server: str):
 
 
 if __name__ == "__main__":
-    DEBUG = False
-    NOOP = False
+    DEBUG = True if os.getenv("UPDATENS_DEBUG", "0") == "1" else False
+    NOOP = True if os.getenv("UPDATENS_NOOP", "0") == "1" else False
     logging.basicConfig(level="INFO" if DEBUG else None)
     # resolve the IP of the AXFR target dynamically by reading the SOA record
     resolver = dns.resolver.Resolver()
     try:
-        soa_answer = resolver.resolve(zone, dns.rdatatype.SOA)
-        host_ip = str(socket.gethostbyname(str(soa_answer[0].mname)))
+        target_env = os.getenv("UPDATENS_TARGET", "SOA")
+        if target_env == "SOA":
+          soa_answer = resolver.resolve(zone, dns.rdatatype.SOA)
+          host_ip = str(socket.gethostbyname(str(soa_answer[0].mname)))
+        else:
+          host_ip = str(socket.gethostbyname(str(target_env)))
     except Exception as e:
         logging.error(f"error: {e}")
         exit(1)
