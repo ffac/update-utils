@@ -99,7 +99,7 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
     nodes = t.json()["nodes"]
 
     addr_filter = os.getenv("UPDATENS_FILTER_ADDR", "f")
-    addr_filter_invert = True if os.getenv("UPDATENS_FILTER_INVERT", "1") == "1" else False
+    addr_filter_invert = os.getenv("UPDATENS_FILTER_INVERT", "1") == "1"
 
     pairs = []
     for node in nodes:
