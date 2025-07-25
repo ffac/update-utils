@@ -54,7 +54,7 @@ zone = os.getenv("UPDATENS_ZONE", "nodes.ffac.rocks.")
 # url from which the current state is crawled
 url = os.getenv("UPDATENS_NODES_URL", "https://map.aachen.freifunk.net/data/nodes.json")
 
-key_secret = os.getenv("UPDATENS_KEY_SECRET", os.getenv("ZONE_SECRET_KEY", ""))
+key_secret = os.getenv("UPDATENS_KEY_SECRET")
 assert len(key_secret) > 10
 key_algorithm = os.getenv("UPDATENS_KEY_ALGO", "hmac-sha512")
 key_name = os.getenv("UPDATENS_KEY_NAME", zone)
@@ -193,8 +193,8 @@ def delete_leftover_hosts(to_remove: list, zone: str, dns_server: str):
 
 
 if __name__ == "__main__":
-    DEBUG = True if os.getenv("UPDATENS_DEBUG", "0") == "1" else False
-    NOOP = True if os.getenv("UPDATENS_NOOP", "0") == "1" else False
+    DEBUG = os.getenv("UPDATENS_DEBUG", "0") == "1"
+    NOOP = os.getenv("UPDATENS_NOOP", "0") == "1"
     logging.basicConfig(level="INFO" if DEBUG else None)
     # resolve the IP of the AXFR target dynamically by reading the SOA record
     resolver = dns.resolver.Resolver()
