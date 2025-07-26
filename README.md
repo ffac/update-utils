@@ -48,7 +48,7 @@ Eventually, you need to do this from a priviliged IP address to avoid the mailco
 
 ## nameserver update script
 
-1. update the UPDATENS_KEY_SECRET (and others in the .env file and load it using `export $(cat .env | xargs)`
+1. update the UPDATENS_KEY_SECRET (and others) in the .env file and load it using `export $(cat .env | xargs)`
 2. run the `updatens.py` script
 
 You can also run this hourly as a cron job like this:
