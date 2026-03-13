@@ -8,6 +8,7 @@ from email.message import EmailMessage
 import pandas as pd
 
 DRY_RUN = True
+ROW_COUNT=35
 
 smtp_host = os.getenv("SMTP_SERVER", "")
 smtp_user = os.getenv("SMTP_USER", "")
@@ -15,20 +16,21 @@ password = os.getenv("SMTP_PW", "")
 sender_name = os.getenv("SENDER_NAME", "Freifunk Aachen")
 
 from_address = f"{sender_name} <{smtp_user}>"
-reply_to_address = "vorstand@freifunk-aachen.de"
+reply_to_address = os.getenv("REPLY_TO", "vorstand@f3n-ac.de")
 smtp_server = smtplib.SMTP_SSL(smtp_host)
 smtp_server.set_debuglevel(False)
 smtp_server.login(smtp_user, password)
-smtp_server.set_debuglevel(1)
+smtp_server.set_debuglevel(True)
 
-members_data = pd.read_excel("members.ods", engine="odf", nrows=31)
+members_data = pd.read_excel("members.ods", engine="odf", nrows=ROW_COUNT).dropna(how="all")
 members_data["Vorname"] = members_data["Vorname"].fillna("")
 members_data["offen_von"] = members_data["offen_von"].fillna(0).astype(int)
 members_data["offen_bis"] = members_data["offen_bis"].fillna(0).astype(int)
+members_data["Mitgliedsnummer"] = members_data["Mitgliedsnummer"].fillna(0).astype(int)
 
 for idx, data in members_data.iterrows():
     # fehlender Vorname ist juristische Person, kriegt keine Mail
-    if data["Kontostand"] >= 0 or not data["Vorname"]:
+    if data["Kontostand"] >= 0:
         continue
 
     if data["offen_von"] != data["offen_bis"]:
@@ -37,7 +39,13 @@ for idx, data in members_data.iterrows():
         offen_jahre = (
             f"Der Mitgliedsbeitrag des Jahres {data['offen_bis']} ist noch ausstehend."
         )
-    content = f"""Hallo {data["Vorname"]} {data["Name"]},
+
+    if data.get("Vorname"):
+        anrede = f'{data["Vorname"]} {data["Name"]}'
+    else:
+        anrede = data["Name"]
+    
+    content = f"""Hallo {anrede},
 
 Sie sind Mitglied der Fördervereinigung freie Netzwerke Aachen e.V. (F3N Aachen e.V.)
 Sie sind mit Mitgliedsnummer {data["Mitgliedsnummer"]} am {data["Eintrittsdatum"].date()} beigetreten.
@@ -61,7 +69,9 @@ Viele Grüße
 Ihr Freiwilligen-Team vom Freifunk Aachen
 """
     if DRY_RUN:
+        print(data["Email"])
         print(content)
+        print("*"*50)
         continue
 
     msg = EmailMessage()
