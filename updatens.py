@@ -159,10 +159,13 @@ def replace_changed_entries(
                         dns.rdataclass.IN, dns.rdatatype.AAAA, ttl=300
                     )
                     for addr in addrs:
-                        rdata = dns.rdata.from_text(
-                            dns.rdataclass.IN, dns.rdatatype.AAAA, addr
-                        )
-                        rdataset.add(rdata)
+                        try:
+                            rdata = dns.rdata.from_text(
+                                 dns.rdataclass.IN, dns.rdatatype.AAAA, addr
+                            )
+                            rdataset.add(rdata)
+                        except Exception as e:
+                            logging.error(f"error with ip address {addr}: {e}")
                     delete.delete(dns_name)
                     update.add(dns_name, rdataset)
             response = dns.query.tcp(delete, host_ip)
