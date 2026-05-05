@@ -110,7 +110,7 @@ def crawl_pairs_from_map(url: str) -> list[tuple[str, str]]:
         else:
             addrs = list(filter(lambda x: x.startswith(addr_filter), addrs))
         host = nodeinfo["hostname"].strip()
-        replacements = ["`", "´", ".", " ", "#", "_", "'", "+", "&", "/"]
+        replacements = ["`", "´", ".", " ", "#", "_", "'", "+", "&", "/", "(", ")"]
         for rep in replacements:
             host = host.replace(rep, "-")
         host = host.strip("-").lower()
