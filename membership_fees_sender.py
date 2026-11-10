@@ -57,7 +57,7 @@ Das ergibt in Summe einen ausstehenden Betrag von {-data["Kontostand"]}€.
 Bitte überweisen Sie den offenen Betrag zeitnah an folgende Kontoverbindung:
 
 Kontoinhaber:\t\tFördervereinigung freie Netzwerke Aachen
-IBAN:\t\t\tDE70 3906 0180 1225 8810 10
+IBAN:\t\t\tDE36 3706 9412 1225 8810 10
 Verwendungszweck:\tMitgliedsbeitrag F3N (+ ggf Name, wenn er vom Kontoinhaber abweicht)
 
 Gerne kann dafür auch ein jährlicher Dauerauftrag angelegt werden.
